@@ -68,3 +68,231 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### Server.js file
+const express = require('express');
+const bodyParser = require('body-parser');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(bodyParser.json());
+
+app.post('/submit', (req, res) => {
+    const formData = req.body;
+    res.json({ message: 'Registration successful', username: formData.username });
+});
+
+app.use(express.static('client/build'));
+
+app.get('/getRequest', (req, res) => {
+    res.send("Hello, this is a successful GET request");
+});
+
+app.post('/postRequest', (req, res) => {
+    const requestData = req.body;
+    res.send("Hello, this is a successful POST request");
+});
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
+### App.js
+import React, { useState } from 'react';
+import './App.css';
+
+function App() {
+    const [formData, setFormData] = useState({
+        username: '', 
+        email: '',
+        password: '',
+        confirmPassword: '',
+        acceptTerms: false
+    });
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [confirmPasswordError, setConfirmPasswordError] = useState(false);
+    const [registeredUsername, setRegisteredUsername] = useState('');
+    const [showPopup, setShowPopup] = useState(false);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+        if (name === 'confirmPassword') {
+            setConfirmPasswordError(value !== formData.password);
+        } else {
+            setConfirmPasswordError(false);
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (formData.password !== formData.confirmPassword) {
+            setConfirmPasswordError(true);
+            return;
+        }
+        
+        setRegisteredUsername(formData.username); 
+        setShowPopup(true);
+    };
+
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
+
+    const toggleConfirmPasswordVisibility = () => {
+        setShowConfirmPassword(!showConfirmPassword);
+    };
+
+    return (
+        <div className="App">
+            <fieldset className="form-box">
+                <legend><span role="img" aria-label="lock">🔒</span> Registration Form</legend>
+                <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <input
+                            type="text"
+                            name="username" 
+                            placeholder="Username" 
+                            value={formData.username} 
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+                    <div className="form-group">
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="Email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+                    <div className="form-group">
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            name="password"
+                            placeholder="Password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            required
+                        />
+                        <span className="eye-icon" onClick={togglePasswordVisibility}>
+                            {showPassword ? <i className="fa fa-eye-slash"></i> : <i className="fa fa-eye"></i>}
+                        </span>
+                    </div>
+                    <div className="form-group">
+                        <input
+                            type={showConfirmPassword ? "text" : "password"}
+                            name="confirmPassword"
+                            placeholder="Confirm Password"
+                            value={formData.confirmPassword}
+                            onChange={handleChange}
+                            required
+                        />
+                        <span className="eye-icon" onClick={toggleConfirmPasswordVisibility}>
+                            {showConfirmPassword ? <i className="fa fa-eye-slash"></i> : <i className="fa fa-eye"></i>}
+                        </span>
+                        {confirmPasswordError && <p className="error-message">Passwords do not match</p>}
+                    </div>
+                    <div className="form-group">
+                        <label>
+                            <input
+                                type="checkbox"
+                                name="acceptTerms"
+                                checked={formData.acceptTerms}
+                                onChange={handleChange}
+                                required
+                            />
+                            I accept the terms and conditions
+                        </label>
+                    </div>
+                    <button type="submit">Submit</button>
+                </form>
+            </fieldset>
+            {showPopup && (
+                <div className="popup">
+                    <div className="popup-content">
+                        <h2>Registration Successful!</h2>
+                        <p>Your account has been successfully registered, {registeredUsername}!</p>
+                        <button onClick={() => setShowPopup(false)}>Close</button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+export default App;
+### App.css
+.App {
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+h1 {
+  color: #333;
+}
+
+form {
+  margin-top: 20px;
+}
+
+input[type="text"],
+input[type="email"] {
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 300px;
+  font-size: 16px;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+.eye-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+
+.form-box {
+  display: inline-block;
+  width: auto;
+  margin: 0 auto;
+  padding: 20px;
+  background: linear-gradient(135deg, #3498db, #8e44ad); 
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+legend {
+  font-size: 24px; 
+  font-weight: bold; 
+  color: #0f0d0d; 
+}
+
+
+
+
